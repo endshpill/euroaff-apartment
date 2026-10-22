@@ -12,9 +12,10 @@ The website uses the existing booking service to keep everyone’s reservations 
 
 ## Features
 
-- Shared monthly calendar and list view
+- Shared monthly calendar and list view with visible check-out days
+- Two independently bookable rooms with room selection
 - Colleague names, dates, notes, and personal cancellations
-- Atomic double-booking prevention; same-day arrival and departure supported
+- Atomic double-booking prevention per room; same-day arrival and departure supported
 - Wi-Fi information with reveal/copy controls
 - Shared password, signed sessions, and login attempt limits
 - Responsive EuroAFF design
@@ -51,3 +52,7 @@ Production secrets are configured on the backend, never in GitHub:
 The database, real Wi-Fi credentials, shared password, runtime state, and access tokens are excluded from this repository. `.env.example` documents the keys without values.
 
 Uploading code does not automatically redeploy the backend. Frontend assets are published through Pages after Pages is enabled; backend changes must be deployed to the existing service separately.
+
+## Rooms and check-out dates
+
+Room 1 and Room 2 can be booked independently for the same dates. A room is reserved for nights from check-in up to, but excluding, check-out. Check-out days are still shown with an Out marker so the full visit is visible. Another guest may arrive in that room on its check-out day. Existing reservations created before two-room support are preserved and assigned to Room 1.

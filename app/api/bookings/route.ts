@@ -5,13 +5,15 @@ export const dynamic='force-dynamic';
 const reply=apiReply;
 export async function GET(){
  const user=await getChatGPTUser();if(!user)return reply({error:'Sign in to see apartment bookings.'},401);
- const {results}=await env.DB!.prepare('SELECT id, user_id AS userId, name, arrival, departure, note FROM bookings ORDER BY arrival').all();
+ const {results}=await env.DB!.prepare('SELECT id, user_id AS userId, name, arrival, departure, note, room FROM bookings ORDER BY arrival').all();
  return reply({bookings:results});
 }
 export async function POST(request:Request){
  const user=await getChatGPTUser();if(!user)return reply({error:'Please sign in to book a stay.'},401);
  let data:any;try{data=await request.json()}catch{return reply({error:'Invalid request.'},400)}
  if(!data||typeof data!=='object')return reply({error:'Invalid request.'},400);
+ const room=data.room===undefined?1:data.room;
+ if(room!==1&&room!==2)return reply({error:'Choose Room 1 or Room 2.'},400);
  const {arrival,departure}=data;const name=typeof data.name==='string'?data.name.trim():'';const note=typeof data.note==='string'?data.note.trim():'';
  const valid=(s:unknown)=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(Date.parse(s))&&new Date(s).toISOString().slice(0,10)===s;
  const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Luxembourg'});
@@ -19,9 +21,9 @@ export async function POST(request:Request){
  const count=(Date.parse(departure)-Date.parse(arrival))/86400000;
  if(count>90)return reply({error:'Please book a maximum of 90 nights at a time.'},400);
  const id=crypto.randomUUID();const db=env.DB!;
- const statements=[db.prepare('INSERT INTO bookings (id,user_id,name,arrival,departure,note,created_at) VALUES (?,?,?,?,?,?,?)').bind(id,user.userId,name,arrival,departure,note,new Date().toISOString())];
- for(let n=0;n<count;n++){const date=new Date(Date.parse(arrival)+n*86400000).toISOString().slice(0,10);statements.push(db.prepare('INSERT INTO nights (date,booking_id) VALUES (?,?)').bind(date,id));}
- try{await db.batch(statements)}catch(e){if(String(e).includes('UNIQUE'))return reply({error:'These dates were just booked. Please choose another stay.'},409);throw e;}
+ const statements=[db.prepare('INSERT INTO bookings (id,user_id,name,arrival,departure,note,room,created_at) VALUES (?,?,?,?,?,?,?,?)').bind(id,user.userId,name,arrival,departure,note,room,new Date().toISOString())];
+ for(let n=0;n<count;n++){const date=new Date(Date.parse(arrival)+n*86400000).toISOString().slice(0,10);statements.push(db.prepare('INSERT INTO nights (date,room,booking_id) VALUES (?,?,?)').bind(date,room,id));}
+ try{await db.batch(statements)}catch(e){if(String(e).includes('UNIQUE'))return reply({error:'This room is booked for part of your stay. Please choose the other room or different dates.'},409);throw e;}
  return reply({id},201);
 }
 export async function DELETE(request:Request){
