@@ -1,15 +1,15 @@
 // Transcribed from the supplied Mertert–Wasserbillig Ëmweltkalenner 2026.
 // Explicit dates only: 22 October–31 December 2026. Do not extrapolate to 2027.
 export const wasteTypes={
- household:{label:'Household waste',description:'Grey bin · Household waste collection.'},
- organic:{label:'Organic waste',description:'Brown bin · Organic waste collection.'},
- garden:{label:'Garden waste',description:'Yellow bin · Garden waste collection.'},
- paper:{label:'Paper',description:'Blue bin · Paper collection.'},
- glass:{label:'Glass',description:'Green bin · Glass collection.'},
- valorlux:{label:'Valorlux recycling bags',description:'Valorlux bag collection.'},
- cleaning:{label:'Organic waste bin cleaning',description:'Brown organic waste bin · Bin cleaning service.'},
- recycling:{label:'Recycling centre',description:'Drop-off at the recycling centre · 08:00–15:00. This is not a home collection.'},
- hazardous:{label:'SuperDrecksKëscht',description:'Hazardous waste drop-off at the recycling centre · 08:00–15:00. This is not a home collection.'},
+ household:{color:"#8a9098",label:'Household waste',description:'Grey bin · Household waste collection.'},
+ organic:{color:"#865139",label:'Organic waste',description:'Brown bin · Organic waste collection.'},
+ garden:{color:"#d4b900",label:'Garden waste',description:'Yellow bin · Garden waste collection.'},
+ paper:{color:"#087fb5",label:'Paper',description:'Blue bin · Paper collection.'},
+ glass:{color:"#527b3c",label:'Glass',description:'Green bin · Glass collection.'},
+ valorlux:{color:"#26a06a",label:'Valorlux recycling bags',description:'Valorlux bag collection.'},
+ cleaning:{color:"#865139",label:'Organic waste bin cleaning',description:'Brown organic waste bin · Bin cleaning service.'},
+ recycling:{color:"#57a844",label:'Recycling centre',description:'Drop-off at the recycling centre · 08:00–15:00. This is not a home collection.'},
+ hazardous:{color:"#bb8019",label:'SuperDrecksKëscht',description:'Hazardous waste drop-off at the recycling centre · 08:00–15:00. This is not a home collection.'},
 } as const;
 export type WasteType=keyof typeof wasteTypes;
 export const wasteCalendar:Record<string,readonly WasteType[]>={
