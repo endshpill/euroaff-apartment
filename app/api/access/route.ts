@@ -1,6 +1,6 @@
 import {apiReply,apiPreflight,allowedOrigin,PAGES_ORIGIN} from '../../api-cors';
 import {env} from 'cloudflare:workers';
-import {ACCESS_COOKIE,IDENTITY_COOKIE,cookieValue,configuredPassword,matchesPassword,signIdentity,verifyIdentity} from '../../apartment-session';
+import {ACCESS_COOKIE,IDENTITY_COOKIE,configuredPassword,matchesPassword,signIdentity,personId} from '../../apartment-session';
 export const dynamic='force-dynamic';
 const reply=apiReply;
 const sameOrigin=allowedOrigin;
@@ -19,8 +19,7 @@ export async function POST(request:Request){
  if(!(await matchesPassword(password)))return reply({error:'The password is incorrect. Please try again.'},401);
  await env.DB!.batch([env.DB!.prepare('DELETE FROM access_attempts WHERE key=?').bind(attemptKey),env.DB!.prepare('DELETE FROM access_attempts WHERE expires<?').bind(now)]);
  const crossOrigin=request.headers.get('origin')===PAGES_ORIGIN;
- const old=await verifyIdentity(crossOrigin?(typeof data.identityToken==='string'?data.identityToken:undefined):cookieValue(request.headers.get('cookie'),IDENTITY_COOKIE),'identity');
- const id=old?.id||'guest_'+crypto.randomUUID();
+ const id=await personId(name);
  const accessToken=await signIdentity({id,name,expires:now+30*86400000},'access');const identityToken=await signIdentity({id,name,expires:now+365*86400000},'identity');
  if(crossOrigin)return reply({ok:true,accessToken,identityToken},200);
  const h=new Headers();h.append('Set-Cookie',cookie(ACCESS_COOKIE,accessToken,30*86400,request));h.append('Set-Cookie',cookie(IDENTITY_COOKIE,identityToken,365*86400,request));

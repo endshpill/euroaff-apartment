@@ -56,3 +56,7 @@ Uploading code does not automatically redeploy the backend. Frontend assets are 
 ## Rooms and check-out dates
 
 Room 1 and Room 2 can be booked independently for the same dates. A room is reserved for nights from check-in up to, but excluding, check-out. Check-out days are still shown with an Out marker so the full visit is visible. Another guest may arrive in that room on its check-out day. Existing reservations created before two-room support are preserved and assigned to Room 1.
+
+## Booking ownership
+
+Colleagues use the shared apartment password and their full name. The normalized login name has a stable, signed identity across browsers. Legacy bookings reconnect by their recorded guest name or an existing signed identity. This is a trusted team calendar, not individually verified accounts: someone who knows the shared password can enter another colleague’s name. Bookings already assigned to a stable identity are not reassigned by changing a booking’s guest name.

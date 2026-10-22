@@ -1,4 +1,5 @@
-import {getApartmentSession} from './apartment-session';
+import {getApartmentSession,normalizeName,personId} from './apartment-session';
+import {env} from 'cloudflare:workers';
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -10,11 +11,6 @@ export type ChatGPTUser = {
 };
 
 const USER_ID_HEADER = "oai-authenticated-user-id";
-const USER_EMAIL_HEADER = "oai-authenticated-user-email";
-const USER_FULL_NAME_HEADER = "oai-authenticated-user-full-name";
-const USER_FULL_NAME_ENCODING_HEADER =
-  "oai-authenticated-user-full-name-encoding";
-const PERCENT_ENCODED_UTF8 = "percent-encoded-utf-8";
 const SIGN_IN_PATH = "/signin-with-chatgpt";
 const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
@@ -22,24 +18,15 @@ const CALLBACK_PATH = "/callback";
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const session=await getApartmentSession();
   if(!session)return null;
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get(USER_ID_HEADER);
-  const email = requestHeaders.get(USER_EMAIL_HEADER);
-  if (!userId || !email) return {userId:session.id,displayName:session.name,email:"",fullName:session.name};
-
-  const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get(USER_FULL_NAME_ENCODING_HEADER) === PERCENT_ENCODED_UTF8
-      ? safeDecodeURIComponent(encodedFullName)
-      : null;
-
-  return {
-    userId,
-    displayName: fullName ?? email,
-    email,
-    fullName,
-  };
+  const requestHeaders=await headers();
+  const userId=await personId(session.name);
+  // Reconnect bookings created before login names had stable identities.
+  // Never reassign a booking already attached to a stable person identity.
+  const legacyIds=[session.id,requestHeaders.get(USER_ID_HEADER)].filter(Boolean);
+  const {results}=await env.DB!.prepare("SELECT id, user_id, name FROM bookings WHERE user_id NOT GLOB 'person_*'").all<{id:string;user_id:string;name:string}>();
+  const matches=results.filter(b=>legacyIds.includes(b.user_id)||normalizeName(b.name)===normalizeName(session.name));
+  if(matches.length)await env.DB!.batch(matches.map(b=>env.DB!.prepare('UPDATE bookings SET user_id=? WHERE id=? AND user_id=?').bind(userId,b.id,b.user_id)));
+  return {userId,displayName:session.name,email:'',fullName:session.name};
 }
 
 export async function requireChatGPTUser(
@@ -84,10 +71,3 @@ function isReservedAuthPath(pathname: string): boolean {
   );
 }
 
-function safeDecodeURIComponent(value: string): string | null {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return null;
-  }
-}

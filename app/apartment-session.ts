@@ -13,3 +13,7 @@ export async function verifyIdentity(token:string|undefined,kind:'access'|'ident
 export function cookieValue(raw:string|null,key:string){return raw?.split(';').map(s=>s.trim()).find(s=>s.startsWith(key+'='))?.slice(key.length+1)}
 export async function getApartmentSession(){const h=await headers();const auth=h.get('authorization');return verifyIdentity(auth?.startsWith('Bearer ')?auth.slice(7):cookieValue(h.get('cookie'),ACCESS_COOKIE),'access')}
 export async function matchesPassword(value:string){const expected=configuredPassword();if(!expected)return false;const a=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)));const b=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(expected)));let diff=0;for(let i=0;i<a.length;i++)diff|=a[i]^b[i];return diff===0}
+
+// A shared-password workspace identifies colleagues by their normalised login name.
+export function normalizeName(name:string){return name.normalize('NFKC').trim().replace(/\s+/g,' ').toLowerCase()}
+export async function personId(name:string){const signature=await crypto.subtle.sign('HMAC',await key('identity'),new TextEncoder().encode('apartment-person:'+normalizeName(name)));return 'person_'+Array.from(new Uint8Array(signature)).map(b=>b.toString(16).padStart(2,'0')).join('')}
