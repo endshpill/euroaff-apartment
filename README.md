@@ -60,3 +60,7 @@ Room 1 and Room 2 can be booked independently for the same dates. A room is rese
 ## Booking ownership
 
 Colleagues use the shared apartment password and their full name. The normalized login name has a stable, signed identity across browsers. Legacy bookings reconnect by their recorded guest name or an existing signed identity. This is a trusted team calendar, not individually verified accounts: someone who knows the shared password can enter another colleague’s name. Bookings already assigned to a stable identity are not reassigned by changing a booking’s guest name.
+
+## Waste schedule
+
+Calendar bin icons show the supplied municipal Mertert–Wasserbillig schedule from 22 October through 31 December 2026. Hover, focus or tap for English details. Centre drop-offs and organic bin cleaning are labelled separately. Dates are transcribed explicitly in `app/waste-calendar.ts`; no recurring dates are inferred for 2027.
