@@ -1,0 +1,9 @@
+'use client';
+import {useState} from 'react';
+import {Wifi,Copy,Check,Eye,EyeOff} from 'lucide-react';
+export type Network={label:string;name:string;password:string};
+export default function WifiInfo({networks}:{networks:Network[]}){
+ const [shown,setShown]=useState<number[]>([]),[copied,setCopied]=useState(''),[error,setError]=useState('');
+ async function copy(value:string,key:string){try{await navigator.clipboard.writeText(value);setCopied(key);setError('');setTimeout(()=>setCopied(v=>v===key?'':v),2000)}catch{setError('Copy is unavailable. Reveal the password to copy it manually.')}}
+ return <section className="wifi-card" aria-labelledby="wifi-title"><div className="wifi-heading"><Wifi size={19}/><h2 id="wifi-title">Stay connected</h2></div><p className="wifi-intro">Apartment Wi-Fi, at your fingertips.</p>{networks.length?networks.map((n,i)=><div className="wifi-network" key={n.name}><p className="wifi-label">{n.label}</p><div className="wifi-field"><div><span>NETWORK NAME</span><strong>{n.name}</strong></div><button aria-label={`Copy ${n.name} network name`} onClick={()=>copy(n.name,`${i}-name`)}>{copied===`${i}-name`?<Check size={14}/>:<Copy size={14}/>}</button></div><div className="wifi-field"><div><span>PASSWORD</span><code>{shown.includes(i)?n.password:'••••••••••••'}</code></div><div className="wifi-actions"><button aria-label={`${shown.includes(i)?'Hide':'Show'} ${n.name} password`} aria-pressed={shown.includes(i)} onClick={()=>setShown(v=>v.includes(i)?v.filter(x=>x!==i):[...v,i])}>{shown.includes(i)?<EyeOff size={14}/>:<Eye size={14}/>}</button><button aria-label={`Copy ${n.name} password`} onClick={()=>copy(n.password,`${i}-password`)}>{copied===`${i}-password`?<Check size={14}/>:<Copy size={14}/>}</button></div></div></div>):<p className="wifi-intro">Sign in to view apartment Wi-Fi details.</p>}<span className="wifi-feedback" role="status">{error||(copied?'Copied to clipboard':'')}</span></section>
+}
