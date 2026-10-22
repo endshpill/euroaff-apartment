@@ -26,3 +26,6 @@
 
 /* Collection markers use the municipal bin colours, with one icon per waste type. */
 .waste-button{gap:2px;min-width:24px;padding:2px;border-color:transparent;background:transparent}.waste-button:hover,.waste-button.selected{border-color:transparent;background:#eee}.waste-icon{display:block;width:18px;height:22px;flex-shrink:0}.waste-popover li>.waste-icon{width:20px;height:24px;margin-top:0}.waste-button span{display:none}@media(max-width:650px){.waste-button{min-width:20px;gap:0;padding:1px}.waste-button .waste-icon{width:14px;height:19px}}
+
+/* Keep stay blocks aligned whether a day has collection icons or not. */
+.day-heading{height:30px;min-height:30px;flex-shrink:0}.day-heading .day-head{height:30px}.day-heading .waste-button{height:28px;min-height:28px}
